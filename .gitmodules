@@ -1,0 +1,3 @@
+[submodule "generator/src/main/resources/DSA-Heldendokument"]
+	path = generator/src/main/resources/DSA-Heldendokument
+	url = git@github.com:flyx/DSA-Heldendokument.git
