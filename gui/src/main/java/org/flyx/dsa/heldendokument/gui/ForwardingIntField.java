@@ -1,7 +1,5 @@
 package org.flyx.dsa.heldendokument.gui;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -13,17 +11,17 @@ import javafx.scene.input.KeyEvent;
  *
  * @author flyx
  */
-class IntField extends TextField {
-    final private IntegerProperty value;
+public class ForwardingIntField extends TextField {
+    final private IntegerInputProperty value;
     final private int minValue;
     final private int maxValue;
 
     // expose an integer value property for the text field.
-    public int  getValue()                 { return value.getValue(); }
-    public void setValue(int newValue)     { value.setValue(newValue); }
-    public IntegerProperty valueProperty() { return value; }
+    public int  getValue()                      { return value.getValue(); }
+    public void setValue(int newValue)          { value.setValue(newValue); }
+    public IntegerInputProperty valueProperty() { return value; }
 
-    IntField(int minValue, int maxValue, int initialValue) {
+    ForwardingIntField(int minValue, int maxValue, int initialValue) {
         if (minValue > maxValue)
             throw new IllegalArgumentException(
                     "IntField min value " + minValue + " greater than max value " + maxValue
@@ -40,10 +38,10 @@ class IntField extends TextField {
         // initialize the field values.
         this.minValue = minValue;
         this.maxValue = maxValue;
-        value = new SimpleIntegerProperty(initialValue);
+        value = new IntegerInputProperty(initialValue);
         setText(initialValue + "");
 
-        final IntField intField = this;
+        final ForwardingIntField intField = this;
 
         // make sure the value property is clamped to the required range
         // and update the field's text to be in sync with the value.

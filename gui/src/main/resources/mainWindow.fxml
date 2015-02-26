@@ -19,7 +19,7 @@
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
             <children>
-                <Button text="Dokument erstellen"/>
+                <Button text="Dokument erstellen" onAction="#handleCreateAction"/>
             </children>
         </HBox>
     </top>
