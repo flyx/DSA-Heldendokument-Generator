@@ -1,4 +1,4 @@
-package java.org.flyx.dsa.heldendokument.generator;
+package org.flyx.dsa.heldendokument.generator;
 
 /**
  * This is a callback interface for {@link IBuilder}. Because an action of

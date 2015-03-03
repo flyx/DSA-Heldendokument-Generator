@@ -1,4 +1,6 @@
-package java.org.flyx.dsa.heldendokument.generator;
+package org.flyx.dsa.heldendokument.generator;
+
+import java.util.List;
 
 /**
  * An IBuilder object creates a PDF file that can later be filled with values.
@@ -12,4 +14,43 @@ public interface IBuilder {
      * @param callback Object that wants to receive status reports
      */
     void setCallback(IBuilderCallback callback);
+
+    /**
+     *
+     * @return a list of parameters that are needed by the IBuilder implementation.
+     */
+    List<AdditionalParameter> getAdditionalParameters();
+
+    /**
+     * Set a parameter defined in the list returned by {@link #getAdditionalParameters}.
+     * @param name Parameter name as returned by {@link #getAdditionalParameters}
+     * @param value Value of the parameter. Must be a valid path.
+     */
+    void setPathParameter(String name, String value);
+
+    /**
+     * Check if a paramater has a valid value
+     * @param name Parameter name as returned by {@link #getAdditionalParameters}
+     * @return true iff the parameter has a valid value
+     */
+    boolean isParameterValid(String name);
+
+    default boolean areAllParametersValid() {
+        for (AdditionalParameter parameter : getAdditionalParameters()) {
+            if (!isParameterValid(parameter.name)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param name Parameter name as returned by {@link #getAdditionalParameters}
+     * @return The current value of the parameter
+     */
+    String getPathParameter(String name);
+
+    /**
+     * Prepare the build environment for building the PDF.
+     * Before calling this method, all additional parameters must have a valid value.
+     */
+    void prepare();
 }
