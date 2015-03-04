@@ -156,4 +156,19 @@ public class TexBuilder implements IBuilder {
             throw new RuntimeException("Konnte eine Datei nicht anlegen.", e);
         }
     }
+
+    @Override
+    public File build(DocumentConfiguration configuration) {
+        final File targetParamsFile = new File(buildRoot + "DSA-Heldendokument/configuredParameters.yaml");
+        if (targetParamsFile.exists()) {
+            targetParamsFile.delete();
+        }
+        try {
+            configuration.serialize(new FileOutputStream(targetParamsFile));
+        } catch (IOException e) {
+            throw new RuntimeException("Konnte Datei nicht anlegen.", e);
+        }
+
+        return null;
+    }
 }

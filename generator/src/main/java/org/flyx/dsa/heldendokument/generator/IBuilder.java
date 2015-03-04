@@ -1,5 +1,6 @@
 package org.flyx.dsa.heldendokument.generator;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -53,4 +54,10 @@ public interface IBuilder {
      * Before calling this method, all additional parameters must have a valid value.
      */
     void prepare();
+
+    /**
+     * Builds the PDF document.
+     * @param configuration Desired configuration of the PDF document
+     */
+    File build(DocumentConfiguration configuration);
 }

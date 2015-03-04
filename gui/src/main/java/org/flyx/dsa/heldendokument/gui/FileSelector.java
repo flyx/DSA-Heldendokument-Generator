@@ -2,11 +2,8 @@ package org.flyx.dsa.heldendokument.gui;
 
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
@@ -18,7 +15,6 @@ import java.io.File;
  */
 public class FileSelector extends HBox {
     private TextField field;
-    private Button button;
 
     public FileSelector() {
         field = new TextField();
@@ -27,7 +23,7 @@ public class FileSelector extends HBox {
         field.setMinWidth(200);
         setHgrow(field, Priority.ALWAYS);
 
-        button = new Button("Auswählen…");
+        Button button = new Button("Auswählen…");
         button.setStyle("-fx-background-radius: 0 5 5 0;");
         button.setOnAction((ActionEvent event) -> {
             FileChooser chooser = new FileChooser();

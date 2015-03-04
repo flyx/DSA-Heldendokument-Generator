@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -8,24 +7,17 @@
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.flyx.dsa.heldendokument.gui.Controller">
-    <stylesheets>
-        <URL value="@mainWindow.css"/>
-    </stylesheets>
-
     <top>
         <HBox spacing="5">
             <padding>
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
-            <children>
-                <Button text="Dokument erstellen" onAction="#handleCreateAction"/>
-                <Button text="TeX-Parameter ändern" onAction="#handleParameterAction"/>
-            </children>
+            <Button text="Dokument erstellen" onAction="#handleCreateAction"/>
+            <Button text="TeX-Parameter ändern" onAction="#handleParameterAction"/>
         </HBox>
     </top>
     <center>
         <TabPane fx:id="tabs">
-            <tabs/>
         </TabPane>
     </center>
 </BorderPane>

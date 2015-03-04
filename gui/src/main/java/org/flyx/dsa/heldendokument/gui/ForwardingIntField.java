@@ -7,7 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 
 /**
- * Copied from {@url http://stackoverflow.com/a/12851162/347964}
+ * Copied from http://stackoverflow.com/a/12851162/347964
  *
  * @author flyx
  */

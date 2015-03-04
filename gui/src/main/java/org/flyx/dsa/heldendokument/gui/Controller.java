@@ -5,17 +5,20 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.*;
 import org.flyx.dsa.heldendokument.generator.DocumentConfiguration;
+import org.flyx.dsa.heldendokument.generator.Layout;
 import org.flyx.dsa.heldendokument.generator.Lines;
 import org.flyx.dsa.heldendokument.generator.YamlMapping;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author flyx
@@ -43,15 +46,25 @@ public class Controller {
                 tabContent.setSpacing(20);
 
                 Object container = field.get(configuration);
-                List<Field> linesFields = new ArrayList<Field>();
-                List<Field> optionFields = new ArrayList<Field>();
-                List<Field> backgroundFields = new ArrayList<Field>();
-                List<Field> otherFields = new ArrayList<Field>();
+                List<Field> linesFields = new ArrayList<>();
+                List<Field> optionFields = new ArrayList<>();
+                List<Field> backgroundFields = new ArrayList<>();
+                List<Field> otherFields = new ArrayList<>();
+                Map<DocumentConfiguration.Talentbogen.Gruppen, Integer> layout = null;
+                List<DocumentConfiguration.Talentbogen.Sonstiges> sonstiges = null;
 
                 for (Field childField: container.getClass().getFields()) {
                     Lines[] linesAnnotations = childField.getAnnotationsByType(Lines.class);
+                    Layout[] layoutsAnnotations = childField.getAnnotationsByType(Layout.class);
                     if (linesAnnotations.length > 0) {
                         linesFields.add(childField);
+                    } else if (layoutsAnnotations.length > 0) {
+                        Object obj = childField.get(container);
+                        if (obj instanceof Map) {
+                            layout = (Map<DocumentConfiguration.Talentbogen.Gruppen, Integer>) childField.get(container);
+                        } else if (obj instanceof List) {
+                            sonstiges = (List<DocumentConfiguration.Talentbogen.Sonstiges>) childField.get(container);
+                        }
                     } else if (boolean.class.equals(childField.getType())) {
                         optionFields.add(childField);
                     } else if (int.class.equals(childField.getType())) {
@@ -65,6 +78,10 @@ public class Controller {
 
                 if (linesFields.size() > 0) {
                     tabContent.getChildren().add(createIntMappingArea("Zeilenanzahl", container, linesFields));
+                }
+
+                if (layout != null) {
+                    tabContent.getChildren().add(createLayoutArea("Zeilenanzahl", layout));
                 }
 
                 if (optionFields.size() > 0) {
@@ -190,8 +207,48 @@ public class Controller {
         };
     }
 
+    private VBox createLayoutArea(String heading, Map<DocumentConfiguration.Talentbogen.Gruppen, Integer> layout) {
+        return new SettingsArea(heading) {
+            @Override
+            public Node createContent() {
+                GridPane pane = new GridPane();
+                pane.setAlignment(Pos.CENTER);
+                pane.setHgap(10);
+                pane.setVgap(5);
+                pane.getColumnConstraints().addAll(
+                        new ColumnConstraints(50, 200, 200, Priority.NEVER, HPos.RIGHT, false),
+                        new ColumnConstraints(25, 50, 50, Priority.NEVER, HPos.LEFT, false));
+
+                for (int i = 0; i < DocumentConfiguration.Talentbogen.Gruppen.values().length; i++) {
+                    final DocumentConfiguration.Talentbogen.Gruppen gruppe =
+                            DocumentConfiguration.Talentbogen.Gruppen.values()[i];
+                    Label label = new Label(gruppe.toString() + ":");
+                    label.setAlignment(Pos.BASELINE_RIGHT);
+
+                    int defaultValue = 0;
+                    if (layout.containsKey(gruppe)) {
+                        defaultValue = layout.get(gruppe);
+                    }
+                    final ForwardingIntField input = new ForwardingIntField(0, 100, defaultValue);
+
+                    input.valueProperty().forwardBind(layout, gruppe);
+
+                    GridPane.setConstraints(label, 0, i);
+                    GridPane.setConstraints(input, 1, i);
+                    pane.getChildren().addAll(label, input);
+                }
+                return pane;
+            }
+        };
+    }
+
     @FXML private void handleCreateAction(@SuppressWarnings("unused")ActionEvent event) {
-        // TODO
+        final Button button = (Button)event.getSource();
+        button.setDisable(true);
+        // TODO: callback? process file?
+        App.getInstance().builder.build(configuration);
+
+        button.setDisable(false);
     }
 
     @FXML private void handleParameterAction(@SuppressWarnings("unused")ActionEvent event) {

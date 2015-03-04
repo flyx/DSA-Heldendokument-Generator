@@ -4,17 +4,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.HPos;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import org.controlsfx.dialog.Dialogs;
 import org.flyx.dsa.heldendokument.generator.AdditionalParameter;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
