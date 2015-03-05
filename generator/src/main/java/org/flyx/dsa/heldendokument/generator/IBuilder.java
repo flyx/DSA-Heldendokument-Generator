@@ -50,6 +50,13 @@ public interface IBuilder {
     String getPathParameter(String name);
 
     /**
+     * Checks if the environment has the necessary tools installed for running the builder.
+     * @param messages A list for appending any error messages
+     * @return true iff the environment can run the builder
+     */
+    boolean isEnvironmentValid(List<String> messages);
+
+    /**
      * Prepare the build environment for building the PDF.
      * Before calling this method, all additional parameters must have a valid value.
      */
@@ -59,5 +66,5 @@ public interface IBuilder {
      * Builds the PDF document.
      * @param configuration Desired configuration of the PDF document
      */
-    File build(DocumentConfiguration configuration);
+    File build(DocumentConfiguration configuration) throws ExternalCallException;
 }

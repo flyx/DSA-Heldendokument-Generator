@@ -6,6 +6,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import org.controlsfx.dialog.Dialogs;
 import org.flyx.dsa.heldendokument.generator.AdditionalParameter;
 
@@ -46,6 +49,26 @@ public class ParameterController {
             content.getChildren().add(description);
 
             row++;
+        }
+
+        if (!App.getInstance().environmentValid) {
+            for (String message : App.getInstance().envMessages) {
+                Label mLabel = new Label(message);
+                mLabel.setFont(Font.font(null, FontWeight.BOLD, 12));
+                mLabel.setTextFill(Color.RED);
+                GridPane.setConstraints(mLabel, 0, row);
+                GridPane.setColumnSpan(mLabel, 3);
+                content.getChildren().add(mLabel);
+
+                row++;
+            }
+        } else {
+            Label sLabel = new Label("Alle nötigen Programme sind auf deinem System verfügbar.");
+            sLabel.setFont(Font.font(null, FontWeight.BOLD, 12));
+            sLabel.setTextFill(Color.GREEN);
+            GridPane.setConstraints(sLabel, 0, row);
+            GridPane.setColumnSpan(sLabel, 3);
+            content.getChildren().add(sLabel);
         }
     }
 

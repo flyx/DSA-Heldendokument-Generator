@@ -10,6 +10,9 @@ import javafx.stage.StageStyle;
 import org.flyx.dsa.heldendokument.generator.IBuilder;
 import org.flyx.dsa.heldendokument.generator.TexBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author flyx
  */
@@ -24,14 +27,19 @@ public class App extends Application {
     public IBuilder builder;
     public Stage parameterWindow;
 
+    public boolean environmentValid;
+    public List<String> envMessages;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         instance = this;
 
         builder = new TexBuilder();
+        envMessages = new ArrayList<>();
+        environmentValid = builder.isEnvironmentValid(envMessages);
 
         Parent parameterDef = FXMLLoader.load(getClass().getResource("/parameterWindow.fxml"));
-        Scene parameterScene = new Scene(parameterDef, 600, 150);
+        Scene parameterScene = new Scene(parameterDef, 600, 200);
 
         parameterWindow = new Stage(StageStyle.UNIFIED);
         parameterWindow.initModality(Modality.WINDOW_MODAL);

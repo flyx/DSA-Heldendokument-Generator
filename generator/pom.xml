@@ -33,6 +33,11 @@
             <version>1.7</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>net.schmizz</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.10.0</version>
+        </dependency>
     </dependencies>
     <build>
         <pluginManagement>

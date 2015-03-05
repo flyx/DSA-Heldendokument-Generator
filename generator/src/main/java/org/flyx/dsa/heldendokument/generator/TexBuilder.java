@@ -1,9 +1,15 @@
 package org.flyx.dsa.heldendokument.generator;
 
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -11,7 +17,7 @@ import java.util.prefs.Preferences;
  */
 public class TexBuilder implements IBuilder {
     private static final String buildRoot;
-    private static final String mansonKey = "Manson";
+    private static final String mansonKey = "MansonRegular";
     private static final String mansonBoldKey = "MansonBold";
 
     // configuration
@@ -73,14 +79,14 @@ public class TexBuilder implements IBuilder {
     @Override
     public List<AdditionalParameter> getAdditionalParameters() {
         return Arrays.asList(
-                new AdditionalParameter(AdditionalParameter.Type.PATH, "Manson.ttf", "Manson Schriftart (normal)"),
+                new AdditionalParameter(AdditionalParameter.Type.PATH, "MansonRegular.ttf", "Manson Schriftart (normal)"),
                 new AdditionalParameter(AdditionalParameter.Type.PATH, "MansonBold.ttf", "Manson Schriftart (fett)")
         );
     }
 
     @Override
     public void setPathParameter(String name, String value) {
-        if ("Manson.ttf".equals(name)) {
+        if ("MansonRegular.ttf".equals(name)) {
             if (new File(value).isFile()) {
                 manson = value;
                 preferences.put(mansonKey, manson);
@@ -101,7 +107,7 @@ public class TexBuilder implements IBuilder {
 
     @Override
     public boolean isParameterValid(String name) {
-        if ("Manson.ttf".equals(name)) {
+        if ("MansonRegular.ttf".equals(name)) {
             return manson != null;
         } else if ("MansonBold.ttf".equals(name)) {
             return mansonBold != null;
@@ -112,13 +118,33 @@ public class TexBuilder implements IBuilder {
 
     @Override
     public String getPathParameter(String name) {
-        if ("Manson.ttf".equals(name)) {
+        if ("MansonRegular.ttf".equals(name)) {
             return manson;
         } else if ("MansonBold.ttf".equals(name)) {
             return mansonBold;
         } else {
             throw new RuntimeException("Unknown parameter: " + name);
         }
+    }
+
+    @Override
+    public boolean isEnvironmentValid(List<String> messages) {
+        boolean foundErrors = false;
+        for (Map.Entry<String, String> entry: new HashMap<String, String>() {{put("Vagrant", "vagrant"); put("VirtualBox", "VBoxManage");}}.entrySet()) {
+            boolean available = false;
+            try {
+                Process vagrantProc = new ProcessBuilder(entry.getValue(), "-v").start();
+                int ret = vagrantProc.waitFor();
+                available = ret == 0;
+            } catch (Exception ignored) {
+                ignored.printStackTrace();
+            }
+            if (!available) {
+                messages.add(entry.getKey() + " ist nicht auf deinem System installiert.");
+                foundErrors = true;
+            }
+        }
+        return !foundErrors;
     }
 
     @Override
@@ -143,7 +169,7 @@ public class TexBuilder implements IBuilder {
                     }
                 }
             }
-            final File mansonFile = new File(buildRoot + "DSA-Heldendokument/vagrant-vm/Manson.ttf");
+            final File mansonFile = new File(buildRoot + "DSA-Heldendokument/vagrant-vm/MansonRegular.ttf");
             final File mansonBoldFile = new File(buildRoot + "DSA-Heldendokument/vagrant-vm/MansonBold.ttf");
 
             if (!mansonFile.exists()) {
@@ -157,8 +183,42 @@ public class TexBuilder implements IBuilder {
         }
     }
 
+    private static enum VMState {NOT_CREATED, NOT_RUNNING, RUNNING, UNKNOWN};
+
     @Override
-    public File build(DocumentConfiguration configuration) {
+    public File build(DocumentConfiguration configuration) throws ExternalCallException {
+        if (callback != null) {
+            callback.nowDoing("Konfiguration wird geschrieben", "Die vorgenommenen Einstellungen werden in eine Datei geschrieben");
+        }
+        writeConfig(configuration);
+
+        final VMState vmState = getVMState();
+        switch (vmState) {
+            case NOT_CREATED:
+                if (callback != null) {
+                    callback.nowDoing("Virtuelle Maschine wird erstellt", "Die Virtuelle Maschine wird erstellt. Dies kann eine Weile dauern und muss nur einmal gemacht werden.");
+                }
+                vagrantup();
+                break;
+            case NOT_RUNNING:
+                if (callback != null) {
+                    callback.nowDoing("Virtuelle Maschine wird hochgefahren", "Die Virtuelle Maschine existiert bereits und wird hochgefahren.");
+                }
+                vagrantup();
+                break;
+            case RUNNING:
+                break;
+            case UNKNOWN:
+                throw new RuntimeException("Der Status der VM ist unbekannt, breche ab.");
+        }
+
+        if (callback != null) {
+            callback.nowDoing("PDF erstellen", "Das PDF wird nun erstellt.");
+        }
+        return createPDF();
+    }
+
+    private void writeConfig(DocumentConfiguration configuration) {
         final File targetParamsFile = new File(buildRoot + "DSA-Heldendokument/configuredParameters.yaml");
         if (targetParamsFile.exists()) {
             targetParamsFile.delete();
@@ -168,7 +228,106 @@ public class TexBuilder implements IBuilder {
         } catch (IOException e) {
             throw new RuntimeException("Konnte Datei nicht anlegen.", e);
         }
-
-        return null;
     }
+
+    private VMState getVMState() throws ExternalCallException {
+        ProcessBuilder builder = new ProcessBuilder("vagrant", "status");
+        builder.directory(new File(buildRoot + "DSA-Heldendokument/vagrant-vm/"));
+        builder.redirectErrorStream(true);
+        try {
+            Process proc = builder.start();
+            if (proc.waitFor() != 0) {
+                throw new ExternalCallException("Konnte VM Status nicht ermitteln", proc.getInputStream());
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("default")) {
+                    if (line.contains("not created")) {
+                        return VMState.NOT_CREATED;
+                    } else if (line.contains("running")) {
+                        return VMState.RUNNING;
+                    } else if (line.contains("poweroff")) {
+                        return VMState.NOT_RUNNING;
+                    } else {
+                        return VMState.UNKNOWN;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return VMState.UNKNOWN;
+    }
+
+    private void vagrantup() throws ExternalCallException {
+        ProcessBuilder builder = new ProcessBuilder("vagrant", "up");
+        builder.directory(new File(buildRoot + "DSA-Heldendokument/vagrant-vm/"));
+        builder.redirectErrorStream(true);
+
+        int ret;
+        Process proc;
+        try {
+            proc = builder.start();
+            ret = proc.waitFor();
+        } catch (Exception e) {
+            throw new RuntimeException("VM konnte nicht erstellt oder hochgefahren werden.", e);
+        }
+        if (ret != 0) {
+            throw new ExternalCallException("VM konnte nicht erstellt oder hochgefahren werden.", proc.getInputStream());
+        }
+    }
+
+    private File createPDF() throws ExternalCallException {
+        try {
+            // first, let's figure out on which port the VM is reachable
+            ProcessBuilder builder = new ProcessBuilder("vagrant", "ssh-config");
+            builder.directory(new File(buildRoot + "DSA-Heldendokument/vagrant-vm/"));
+            Process proc = builder.start();
+            if (proc.waitFor() != 0) {
+                throw new RuntimeException("Konnte VM Konfiguration nicht lesen.");
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            String line;
+            int port = 0;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("  Port ")) {
+                    port = Integer.parseInt(line.substring(7));
+                }
+            }
+            if (port == 0) {
+                throw new RuntimeException("Konnte SSH-Port der VM nicht ermitteln.");
+            }
+            reader.close();
+
+            SSHClient client = new SSHClient();
+            client.addHostKeyVerifier(new PromiscuousVerifier());
+            client.connect("localhost", port);
+            client.authPassword("vagrant", "vagrant");
+            Session session = client.startSession();
+            /*Session.Shell shell = session.startShell();
+            OutputStreamWriter osw = new OutputStreamWriter(shell.getOutputStream());
+            osw.write("cd /dsa\n");
+            osw.write("export DATA_FILE=configuredParameters.yaml\n");
+            osw.write("make heldendokument.pdf\n");
+            shell.join();
+            shell.close();*/
+            session.exec("cd /dsa; export DATA_FILE=configuredParameters.yaml; make heldendokument.pdf");
+            session.join();
+            session.close();
+            client.disconnect();
+
+            File result = new File(buildRoot + "DSA-Heldendokument/heldendokument.pdf");
+            if (!result.exists()) {
+                throw new ExternalCallException("PDF wurde nicht erstellt!", /*shell.getInputStream()*/ "blubb");
+            }
+            return result;
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            } else if (e instanceof ExternalCallException) {
+                throw (ExternalCallException)e;
+            }
+            throw new RuntimeException("Konnte PDF nicht erstellen, irgendwas™ ging schief.", e);
+        }
+    }
+
 }

@@ -10,10 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.*;
-import org.flyx.dsa.heldendokument.generator.DocumentConfiguration;
-import org.flyx.dsa.heldendokument.generator.Layout;
-import org.flyx.dsa.heldendokument.generator.Lines;
-import org.flyx.dsa.heldendokument.generator.YamlMapping;
+import org.flyx.dsa.heldendokument.generator.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,12 +22,15 @@ import java.util.Map;
  */
 public class Controller {
     @FXML private TabPane tabs;
+    @FXML private Button generateButton;
 
     private DocumentConfiguration configuration;
 
     @FXML public void initialize() throws IllegalAccessException {
         configuration = new DocumentConfiguration();
         configuration.loadDefaults();
+
+        generateButton.setDisable(!App.getInstance().environmentValid);
 
         for (Field field: DocumentConfiguration.class.getFields()) {
             YamlMapping[] mappings = field.getAnnotationsByType(YamlMapping.class);
@@ -246,7 +246,12 @@ public class Controller {
         final Button button = (Button)event.getSource();
         button.setDisable(true);
         // TODO: callback? process file?
-        App.getInstance().builder.build(configuration);
+        try {
+            App.getInstance().builder.build(configuration);
+        } catch (Exception e) {
+            ErrorWindow ew = new ErrorWindow(e);
+            ew.show();
+        }
 
         button.setDisable(false);
     }

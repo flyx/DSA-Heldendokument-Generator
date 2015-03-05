@@ -12,7 +12,7 @@
             <padding>
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
-            <Button text="Dokument erstellen" onAction="#handleCreateAction"/>
+            <Button text="Dokument erstellen" onAction="#handleCreateAction" fx:id="generateButton"/>
             <Button text="TeX-Parameter ändern" onAction="#handleParameterAction"/>
         </HBox>
     </top>
