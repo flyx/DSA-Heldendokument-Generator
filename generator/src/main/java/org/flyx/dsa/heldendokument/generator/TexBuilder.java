@@ -189,6 +189,7 @@ public class TexBuilder implements IBuilder {
     public File build(DocumentConfiguration configuration) throws ExternalCallException {
         if (callback != null) {
             callback.nowDoing("Konfiguration wird geschrieben", "Die vorgenommenen Einstellungen werden in eine Datei geschrieben");
+            callback.nowAt(10);
         }
         writeConfig(configuration);
 
@@ -197,12 +198,14 @@ public class TexBuilder implements IBuilder {
             case NOT_CREATED:
                 if (callback != null) {
                     callback.nowDoing("Virtuelle Maschine wird erstellt", "Die Virtuelle Maschine wird erstellt. Dies kann eine Weile dauern und muss nur einmal gemacht werden.");
+                    callback.nowAt(11);
                 }
                 vagrantup();
                 break;
             case NOT_RUNNING:
                 if (callback != null) {
                     callback.nowDoing("Virtuelle Maschine wird hochgefahren", "Die Virtuelle Maschine existiert bereits und wird hochgefahren.");
+                    callback.nowAt(60);
                 }
                 vagrantup();
                 break;
@@ -213,7 +216,8 @@ public class TexBuilder implements IBuilder {
         }
 
         if (callback != null) {
-            callback.nowDoing("PDF erstellen", "Das PDF wird nun erstellt.");
+            callback.nowDoing("PDF wird erstellt", "Das PDF wird nun erstellt.");
+            callback.nowAt(80);
         }
         return createPDF();
     }

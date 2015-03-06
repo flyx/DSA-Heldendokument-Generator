@@ -1,17 +1,20 @@
 package org.flyx.dsa.heldendokument.gui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.*;
 import org.flyx.dsa.heldendokument.generator.*;
 
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ import java.util.Map;
 public class Controller {
     @FXML private TabPane tabs;
     @FXML private Button generateButton;
+    @FXML private Label shortStatus;
+    @FXML private ProgressBar progress;
 
     private DocumentConfiguration configuration;
 
@@ -244,16 +249,62 @@ public class Controller {
 
     @FXML private void handleCreateAction(@SuppressWarnings("unused")ActionEvent event) {
         final Button button = (Button)event.getSource();
-        button.setDisable(true);
-        // TODO: callback? process file?
-        try {
-            App.getInstance().builder.build(configuration);
-        } catch (Exception e) {
-            ErrorWindow ew = new ErrorWindow(e);
-            ew.show();
-        }
 
-        button.setDisable(false);
+        Task<File> buildTask = new Task<File>() {
+            @Override
+            protected File call() throws Exception {
+                final IBuilderCallback callback = new IBuilderCallback() {
+                    @Override
+                    public void nowDoing(String shortDescription, String description) {
+                        updateTitle(shortDescription);
+                        updateMessage(description);
+                    }
+
+                    @Override
+                    public void nowAt(int percent) {
+                        updateProgress(percent, 100);
+                    }
+                };
+                App.getInstance().builder.setCallback(callback);
+                return App.getInstance().builder.build(configuration);
+            }
+
+            @Override
+            protected void succeeded() {
+                shortStatus.textProperty().unbind();
+                shortStatus.setText("");
+                progress.progressProperty().unbind();
+                progress.setVisible(false);
+                button.setDisable(false);
+                // the javafx thing for this doesn't work
+                try {
+                    Desktop.getDesktop().open(getValue());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            protected void failed() {
+                Exception e = (Exception)getException();
+                if (e != null) {
+                    ErrorWindow ew = new ErrorWindow(e);
+                    ew.show();
+                }
+
+                shortStatus.textProperty().unbind();
+                shortStatus.setText("");
+                progress.progressProperty().unbind();
+                progress.setVisible(false);
+                button.setDisable(false);
+            }
+        };
+
+        button.setDisable(true);
+        shortStatus.textProperty().bind(buildTask.titleProperty());
+        progress.progressProperty().bind(buildTask.progressProperty());
+        progress.setVisible(true);
+        new Thread(buildTask).start();
     }
 
     @FXML private void handleParameterAction(@SuppressWarnings("unused")ActionEvent event) {

@@ -9,4 +9,5 @@ package org.flyx.dsa.heldendokument.generator;
  */
 public interface IBuilderCallback {
     void nowDoing(String shortDescription, String description);
+    void nowAt(int percent);
 }

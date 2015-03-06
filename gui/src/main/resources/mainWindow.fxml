@@ -8,12 +8,15 @@
             xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.flyx.dsa.heldendokument.gui.Controller">
     <top>
-        <HBox spacing="5">
+        <HBox spacing="5" alignment="BASELINE_LEFT" maxWidth="Infinity">
             <padding>
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
             <Button text="Dokument erstellen" onAction="#handleCreateAction" fx:id="generateButton"/>
             <Button text="TeX-Parameter ändern" onAction="#handleParameterAction"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="" fx:id="shortStatus"/>
+            <ProgressBar fx:id="progress" visible="false"/>
         </HBox>
     </top>
     <center>
