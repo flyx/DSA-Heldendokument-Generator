@@ -1,5 +1,6 @@
 package org.flyx.dsa.heldendokument.generator;
 
+import javafx.util.Pair;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.OutputStream;
@@ -44,8 +45,8 @@ public final class DocumentConfiguration {
 
     public static final class Talentbogen {
         public static final class Sonstiges {
-            public final String titel;
-            public final int zeilen;
+            public String titel;
+            public int zeilen;
 
             public Sonstiges(String titel, int zeilen) {
                 this.titel = titel;
@@ -313,13 +314,16 @@ public final class DocumentConfiguration {
                         } else if (rawTarget instanceof List) {
                             @SuppressWarnings("unchecked")
                             final List<Talentbogen.Sonstiges> layoutTarget = (List<Talentbogen.Sonstiges>)rawTarget;
-                            for (Object rawEntry: layout.entrySet()) {
-                                final Map.Entry entry = (Map.Entry) rawEntry;
-                                final String key = (String)entry.getKey();
-                                if ("Sonstiges".equals(key)) {
-                                    final Map source = (Map)entry.getValue();
-                                    layoutTarget.add(new Talentbogen.Sonstiges((String)source.get("Titel"),
-                                            (Integer)source.get("Zeilen")));
+                            for (String side: new String[]{"Links", "Rechts"}) {
+                                final List sideMap = (List)layout.get(side);
+                                for (Object rawEntry : sideMap) {
+                                    final Map.Entry entry = (Map.Entry)((Map) rawEntry).entrySet().iterator().next();
+                                    final String key = (String) entry.getKey();
+                                    if ("Sonstiges".equals(key)) {
+                                        final Map source = (Map) entry.getValue();
+                                        layoutTarget.add(new Talentbogen.Sonstiges((String) source.get("Titel"),
+                                                (Integer) source.get("Zeilen")));
+                                    }
                                 }
                             }
                         } else {
@@ -418,27 +422,59 @@ public final class DocumentConfiguration {
         yaml.dump(root, new OutputStreamWriter(os));
     }
 
+    private int totalLines(List<Pair<String, Integer>> list) {
+        int ret = 0;
+        for (Pair<String, Integer> p : list) {
+            ret = p.getValue() + 2;
+        }
+        return ret;
+    }
+
     private Object createLayout(Map<Talentbogen.Gruppen, Integer> standard, List<Talentbogen.Sonstiges> sonstiges) {
-        // TODO: properly implement
+        final List<Pair<String, Integer>> left = new ArrayList<>();
+        final List<Pair<String, Integer>> right = new ArrayList<>();
+        for (Talentbogen.Gruppen gruppe: new Talentbogen.Gruppen[]{Talentbogen.Gruppen.Sonderfertigkeiten,
+                Talentbogen.Gruppen.Kampftechniken, Talentbogen.Gruppen.Koerperlich, Talentbogen.Gruppen.Gesellschaft}) {
+            left.add(new Pair<>(gruppe.toString(), standard.get(gruppe)));
+        }
+        for (Talentbogen.Gruppen gruppe: new Talentbogen.Gruppen[]{Talentbogen.Gruppen.Wissen,
+                Talentbogen.Gruppen.Sprachen, Talentbogen.Gruppen.Handwerk}) {
+            right.add(new Pair<>(gruppe.toString(), standard.get(gruppe)));
+        }
+
+        if (totalLines(left) < totalLines(right)) {
+            left.add(new Pair<>(Talentbogen.Gruppen.Natur.toString(), standard.get(Talentbogen.Gruppen.Natur)));
+        } else {
+            right.add(0, new Pair<>(Talentbogen.Gruppen.Natur.toString(), standard.get(Talentbogen.Gruppen.Natur)));
+        }
+        for (Talentbogen.Sonstiges s: sonstiges) {
+            if (totalLines(left) < totalLines(right)) {
+                left.add(1, new Pair<>("Sonstiges-" + s.titel, s.zeilen));
+            } else {
+                right.add(0, new Pair<>("Sonstiges-" + s.titel, s.zeilen));
+            }
+        }
+
         final Map<String, Object> root = new HashMap<>();
-        final List<Object> left = new ArrayList<>();
-        final List<Object> right = new ArrayList<>();
-        root.put("Links", left);
-        root.put("Rechts", right);
+        final List<Object> yamlLeft = new ArrayList<>();
+        final List<Object> yamlRight = new ArrayList<>();
+        root.put("Links", yamlLeft);
+        root.put("Rechts", yamlRight);
 
-        left.add(singletonMap(Talentbogen.Gruppen.Sonderfertigkeiten.toString(), standard.get(Talentbogen.Gruppen.Sonderfertigkeiten)));
-        for (Talentbogen.Sonstiges s : sonstiges) {
-            final Map<String, Object> m = new HashMap<>();
-            m.put("Titel", s.titel);
-            m.put("Zeilen", s.zeilen);
-            left.add(singletonMap("Sonstiges", m));
-        }
-        for (Talentbogen.Gruppen gruppe: new Talentbogen.Gruppen[]{Talentbogen.Gruppen.Kampftechniken, Talentbogen.Gruppen.Koerperlich, Talentbogen.Gruppen.Gesellschaft}) {
-            left.add(singletonMap(gruppe.toString(), standard.get(gruppe)));
-        }
-
-        for (Talentbogen.Gruppen gruppe: new Talentbogen.Gruppen[]{Talentbogen.Gruppen.Natur, Talentbogen.Gruppen.Wissen, Talentbogen.Gruppen.Sprachen, Talentbogen.Gruppen.Handwerk}) {
-            right.add(singletonMap(gruppe.toString(), standard.get(gruppe)));
+        for (Pair<List<Pair<String, Integer>>, List<Object>> p : new ArrayList<Pair<List<Pair<String, Integer>>, List<Object>>>() {{
+            add(new Pair<>(left, yamlLeft));
+            add(new Pair<>(right, yamlRight));
+        }}) {
+            for (Pair<String, Integer> i : p.getKey()) {
+                if (i.getKey().startsWith("Sonstiges-")) {
+                    final Map<String, Object> m = new HashMap<>();
+                    m.put("Titel", i.getKey().substring(10));
+                    m.put("Zeilen", i.getValue());
+                    p.getValue().add(singletonMap("Sonstiges", m));
+                } else {
+                    p.getValue().add(singletonMap(i.getKey(), i.getValue()));
+                }
+            }
         }
 
         return root;

@@ -307,14 +307,7 @@ public class TexBuilder implements IBuilder {
             client.connect("localhost", port);
             client.authPassword("vagrant", "vagrant");
             Session session = client.startSession();
-            /*Session.Shell shell = session.startShell();
-            OutputStreamWriter osw = new OutputStreamWriter(shell.getOutputStream());
-            osw.write("cd /dsa\n");
-            osw.write("export DATA_FILE=configuredParameters.yaml\n");
-            osw.write("make heldendokument.pdf\n");
-            shell.join();
-            shell.close();*/
-            session.exec("cd /dsa; export DATA_FILE=configuredParameters.yaml; make heldendokument.pdf");
+            session.exec("cd /dsa; export DATA_FILE=configuredParameters.yaml; make clean; make heldendokument.pdf");
             session.join();
             session.close();
             client.disconnect();

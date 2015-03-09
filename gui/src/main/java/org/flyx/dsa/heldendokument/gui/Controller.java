@@ -6,9 +6,9 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.flyx.dsa.heldendokument.generator.*;
 
@@ -30,6 +30,8 @@ public class Controller {
     @FXML private ProgressBar progress;
 
     private DocumentConfiguration configuration;
+
+
 
     @FXML public void initialize() throws IllegalAccessException {
         configuration = new DocumentConfiguration();
@@ -87,6 +89,10 @@ public class Controller {
 
                 if (layout != null) {
                     tabContent.getChildren().add(createLayoutArea("Zeilenanzahl", layout));
+                }
+
+                if (sonstiges != null) {
+                    tabContent.getChildren().add(createCustomTalentsArea("Zusätzliche Talentgruppen", sonstiges));
                 }
 
                 if (optionFields.size() > 0) {
@@ -243,6 +249,35 @@ public class Controller {
                     pane.getChildren().addAll(label, input);
                 }
                 return pane;
+            }
+        };
+    }
+
+    private VBox createCustomTalentsArea(String heading, List<DocumentConfiguration.Talentbogen.Sonstiges> values) {
+        return new SettingsArea(heading) {
+            @Override
+            public Node createContent() {
+                final VBox area = new VBox();
+                area.setSpacing(10);
+                area.setAlignment(Pos.TOP_CENTER);
+                area.setPrefWidth(300);
+
+                for (DocumentConfiguration.Talentbogen.Sonstiges value : values) {
+                    final CustomBoxEntry entry = new CustomBoxEntry(values, value, area);
+                    area.getChildren().add(entry);
+                }
+
+                Button addButton = new Button("+");
+                addButton.setOnAction((value) -> {
+                    DocumentConfiguration.Talentbogen.Sonstiges newValue =
+                            new DocumentConfiguration.Talentbogen.Sonstiges("Neue Gruppe", 1);
+                    values.add(newValue);
+                    final CustomBoxEntry newEntry = new CustomBoxEntry(values, newValue, area);
+                    area.getChildren().add(values.size() - 1, newEntry);
+                });
+                area.getChildren().add(addButton);
+
+                return area;
             }
         };
     }
