@@ -198,16 +198,16 @@ public class TexBuilder implements IBuilder {
             case NOT_CREATED:
                 if (callback != null) {
                     callback.nowDoing("Virtuelle Maschine wird erstellt", "Die Virtuelle Maschine wird erstellt. Dies kann eine Weile dauern und muss nur einmal gemacht werden.");
-                    callback.nowAt(11);
+                    callback.nowAt(15);
                 }
-                vagrantup();
+                vagrantup(callback != null);
                 break;
             case NOT_RUNNING:
                 if (callback != null) {
                     callback.nowDoing("Virtuelle Maschine wird hochgefahren", "Die Virtuelle Maschine existiert bereits und wird hochgefahren.");
                     callback.nowAt(60);
                 }
-                vagrantup();
+                vagrantup(false);
                 break;
             case RUNNING:
                 break;
@@ -217,9 +217,27 @@ public class TexBuilder implements IBuilder {
 
         if (callback != null) {
             callback.nowDoing("PDF wird erstellt", "Das PDF wird nun erstellt.");
-            callback.nowAt(80);
+            callback.nowAt(85);
         }
         return createPDF();
+    }
+
+    @Override
+    public void cleanup() {
+        try {
+            final VMState state = getVMState();
+            if (VMState.RUNNING.equals(state)) {
+                ProcessBuilder builder = new ProcessBuilder("vagrant", "halt");
+                builder.directory(new File(buildRoot + "DSA-Heldendokument/vagrant-vm/"));
+                builder.redirectErrorStream(true);
+                Process proc = builder.start();
+                if (proc.waitFor() != 0) {
+                    throw new ExternalCallException("Konnte VM Status nicht ermitteln", proc.getInputStream());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not shutdown VM", e);
+        }
     }
 
     private void writeConfig(DocumentConfiguration configuration) {
@@ -262,21 +280,67 @@ public class TexBuilder implements IBuilder {
         return VMState.UNKNOWN;
     }
 
-    private void vagrantup() throws ExternalCallException {
+    private void vagrantup(boolean doProgress) throws ExternalCallException {
         ProcessBuilder builder = new ProcessBuilder("vagrant", "up");
         builder.directory(new File(buildRoot + "DSA-Heldendokument/vagrant-vm/"));
         builder.redirectErrorStream(true);
+        StringBuilder output = new StringBuilder();
 
         int ret;
         Process proc;
         try {
             proc = builder.start();
+            if (doProgress) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains("Importing base box")) {
+                        callback.nowAt(20);
+                        callback.nowDoing("VM wird erstellt (Basis)", "Die Grundlagen der VM werden eingerichtet");
+                    } else if (line.contains("Running provisioner")) {
+                        callback.nowAt(25);
+                        callback.nowDoing("VM wird erstellt (OS)", "Das Betriebssystem der VM wird eingerichtet");
+                    } else if (line.contains("http://archive.ubuntu.com/ubuntu/ trusty/main libavahi-common-data")) {
+                        callback.nowAt(30);
+                        callback.nowDoing("VM wird erstellt (TeX laden)", "Die nötigen TeX-Komponenten werden geladen.");
+                    } else if (line.contains("http://archive.ubuntu.com/ubuntu/ trusty/main lmodern")) {
+                        callback.nowAt(35);
+                    } else if (line.contains("Unpacking libavahi-common-data")) {
+                        callback.nowAt(40);
+                        callback.nowDoing("VM wird erstellt (TeX installieren)", "Die nötigen TeX-Komponenten werden installiert.");
+                    } else if (line.contains("Unpacking tex-common")) {
+                        callback.nowAt(45);
+                    } else if (line.contains("Unpacking tipa")) {
+                        callback.nowAt(50);
+                    } else if (line.contains("Setting up texlive-base")) {
+                        callback.nowAt(55);
+                    } else if (line.contains("http://archive.ubuntu.com/ubuntu/ trusty/main imagemagick-common")) {
+                        callback.nowAt(60);
+                        callback.nowDoing("VM wird erstellt (ImageMagick laden)", "Die nötigen Grafikwerkzeuge werden geladen");
+                    } else if (line.contains("Unpacking imagemagick-common")) {
+                        callback.nowAt(65);
+                        callback.nowDoing("VM wird erstellt (ImageMagick installieren)", "Die nötigen Grafikwerkzeuge werden installiert.");
+                    } else if (line.contains("Setting up imagemagick")) {
+                        callback.nowAt(70);
+                    } else if (line.contains("http://archive.ubuntu.com/ubuntu/ trusty/main python-markdown")) {
+                        callback.nowDoing("VM wird erstellt (Python)", "Die nötigen Python-Bibliotheken werden installiert.");
+                    } else if (line.contains("Unpacking python-markdown")) {
+                        callback.nowAt(75);
+                    } else if (line.contains("creating: Das Schwarze Auge - Fanpaket")) {
+                        callback.nowAt(80);
+                        callback.nowDoing("VM wird erstellt (DSA)", "DSA-spezifische Dateien werden eingerichtet.");
+                    }
+                    output.append(line).append("\n");
+                    // for debugging:
+                    //System.out.println(line);
+                }
+            }
             ret = proc.waitFor();
         } catch (Exception e) {
             throw new RuntimeException("VM konnte nicht erstellt oder hochgefahren werden.", e);
         }
         if (ret != 0) {
-            throw new ExternalCallException("VM konnte nicht erstellt oder hochgefahren werden.", proc.getInputStream());
+            throw new ExternalCallException("VM konnte nicht erstellt oder hochgefahren werden.", output.toString());
         }
     }
 

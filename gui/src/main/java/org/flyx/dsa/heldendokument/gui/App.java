@@ -64,4 +64,8 @@ public class App extends Application {
             primaryStage.show();
         }
     }
+
+    @Override public void stop() {
+        builder.cleanup();
+    }
 }

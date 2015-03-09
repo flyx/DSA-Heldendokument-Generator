@@ -67,4 +67,9 @@ public interface IBuilder {
      * @param configuration Desired configuration of the PDF document
      */
     File build(DocumentConfiguration configuration) throws ExternalCallException;
+
+    /**
+     * Clean up the builder before shutting down. This may shut down a VM and such things.
+     */
+    void cleanup();
 }

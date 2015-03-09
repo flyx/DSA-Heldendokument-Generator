@@ -425,7 +425,7 @@ public final class DocumentConfiguration {
     private int totalLines(List<Pair<String, Integer>> list) {
         int ret = 0;
         for (Pair<String, Integer> p : list) {
-            ret = p.getValue() + 2;
+            ret += p.getValue() + 2;
         }
         return ret;
     }
