@@ -8,11 +8,9 @@
         <artifactId>parent</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
-    <groupId>org.flyx.dsa.heldendokument</groupId>
     <artifactId>gui</artifactId>
     <version>0.1-SNAPSHOT</version>
     <name>gui</name>
-    <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -66,7 +64,32 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>com.zenjava</groupId>
+                    <artifactId>javafx-maven-plugin</artifactId>
+                    <version>8.1.2</version>
+                    <configuration>
+                        <mainClass>org.flyx.dsa.heldendokument.gui.App</mainClass>
+                        <appName>DSA Heldendokument-Generator</appName>
+                        <needMenu>false</needMenu>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>aboutWindow.fxml</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>aboutWindow.fxml</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 </project>

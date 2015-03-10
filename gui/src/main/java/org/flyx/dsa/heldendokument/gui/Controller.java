@@ -5,10 +5,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.*;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.*;
 import org.flyx.dsa.heldendokument.generator.*;
 
@@ -31,6 +33,7 @@ public class Controller {
 
     private DocumentConfiguration configuration;
 
+    private ContextMenu menu;
 
 
     @FXML public void initialize() throws IllegalAccessException {
@@ -108,6 +111,17 @@ public class Controller {
                 }
             }
         }
+
+        menu = new ContextMenu();
+        menu.getItems().addAll(new MenuItem("TeX-Parameter ändern") {{
+            setOnAction((ActionEvent e) -> {
+                App.getInstance().parameterWindow.show();
+            });
+        }}, new MenuItem("Über…") {{
+            setOnAction((ActionEvent e) -> {
+                App.getInstance().aboutWindow.show();
+            });
+        }});
     }
 
     private VBox createIntMappingArea(String heading, Object container, List<Field> fields) {
@@ -342,7 +356,11 @@ public class Controller {
         new Thread(buildTask).start();
     }
 
-    @FXML private void handleParameterAction(@SuppressWarnings("unused")ActionEvent event) {
-        App.getInstance().parameterWindow.show();
+    @FXML private void showMenu(ActionEvent event) {
+        if (menu.isShowing()) {
+            menu.hide();
+        } else {
+            menu.show((Node) event.getSource(), Side.BOTTOM, 0, 0);
+        }
     }
 }

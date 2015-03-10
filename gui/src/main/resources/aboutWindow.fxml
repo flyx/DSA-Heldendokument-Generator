@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import org.flyx.dsa.heldendokument.gui.BrowserLink?>
+<?import javafx.scene.layout.HBox?>
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" spacing="20" alignment="CENTER">
+    <Label style="-fx-font-weight: bold;" text="DSA Heldendokument-Generator"/>
+    <Label text="Version ${project.version}"/>
+    <HBox alignment="CENTER">
+        <Label text="Copyright © 2015, "/>
+        <BrowserLink text="Felix Krause" targetURL="http://flyx.org/"/>
+    </HBox>
+    <HBox alignment="CENTER">
+        <Label text="Lizensiert unter der "/>
+        <BrowserLink text="Do What the Fuck You Want to Public License" targetURL="http://www.wtfpl.net"/>
+    </HBox>
+    <BrowserLink text="Quellcode auf GitHub" targetURL="${project.url}"/>
+</VBox>

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.image.Image?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.flyx.dsa.heldendokument.gui.Controller">
@@ -12,8 +15,16 @@
             <padding>
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
+            <Button fx:id="menuButton" onAction="#showMenu">
+                <graphic>
+                    <ImageView fitWidth="16" fitHeight="16" preserveRatio="true">
+                        <image>
+                            <Image url="menu.png"/>
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
             <Button text="Dokument erstellen" onAction="#handleCreateAction" fx:id="generateButton"/>
-            <Button text="TeX-Parameter ändern" onAction="#handleParameterAction"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label text="" fx:id="shortStatus"/>
             <ProgressBar fx:id="progress" visible="false"/>

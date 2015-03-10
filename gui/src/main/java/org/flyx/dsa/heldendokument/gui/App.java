@@ -26,6 +26,7 @@ public class App extends Application {
 
     public IBuilder builder;
     public Stage parameterWindow;
+    public Stage aboutWindow;
 
     public boolean environmentValid;
     public List<String> envMessages;
@@ -47,6 +48,14 @@ public class App extends Application {
         parameterWindow.setTitle("DSA Heldendokument Generator: TeX Parameter");
         parameterWindow.setScene(parameterScene);
         parameterWindow.setResizable(false);
+
+        Parent aboutDef = FXMLLoader.load(getClass().getResource("/aboutWindow.fxml"));
+        Scene aboutScene = new Scene(aboutDef, 410, 220);
+        aboutWindow = new Stage(StageStyle.UTILITY);
+        aboutWindow.initOwner(primaryStage);
+        aboutWindow.setTitle("Über dieses Programm");
+        aboutWindow.setScene(aboutScene);
+        aboutWindow.setResizable(false);
 
         if (!builder.areAllParametersValid()) {
             parameterWindow.showAndWait();
