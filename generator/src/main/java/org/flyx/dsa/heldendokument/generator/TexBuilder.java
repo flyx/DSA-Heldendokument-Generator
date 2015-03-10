@@ -247,6 +247,16 @@ public class TexBuilder implements IBuilder {
         }
         try {
             configuration.serialize(new FileOutputStream(targetParamsFile));
+            if (DocumentConfiguration.Hintergrund.Hintergrundbild.Type.CUSTOM.equals(configuration.hintergrund.hochformat.type)) {
+                final File hochformat = new File(configuration.hintergrund.hochformat.customPath);
+                final File targetHochformatFile = new File(buildRoot + "DSA-Heldendokument/" + hochformat.getName().replace('_', '-'));
+                Files.copy(hochformat.toPath(), targetHochformatFile.toPath());
+            }
+            if (DocumentConfiguration.Hintergrund.Hintergrundbild.Type.CUSTOM.equals(configuration.hintergrund.querformat.type)) {
+                final File querformat = new File(configuration.hintergrund.querformat.customPath);
+                final File targetQuerformatFile = new File(buildRoot + "DSA-Heldendokument/" + querformat.getName().replace('_', '-'));
+                Files.copy(querformat.toPath(), targetQuerformatFile.toPath());
+            }
         } catch (IOException e) {
             throw new RuntimeException("Konnte Datei nicht anlegen.", e);
         }

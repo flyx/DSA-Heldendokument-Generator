@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import org.flyx.dsa.heldendokument.generator.DocumentConfiguration;
 
 /**
@@ -13,15 +14,27 @@ public class BackgroundPictureInput extends HBox implements ChangeListener<Strin
     private DocumentConfiguration.Hintergrund.Hintergrundbild target;
 
     private ComboBox<String> box;
+    private FileSelector customFile;
 
     public BackgroundPictureInput() {
         super();
+        setSpacing(5);
 
-        box = new ComboBox<String>();
-        box.getItems().addAll("Original", "Keines", "Alterativ", "Benutzerdefiniert");
+        box = new ComboBox<>();
+        box.getItems().addAll("Original", "Keines", "Alternativ", "Benutzerdefiniert");
         box.getSelectionModel().selectFirst();
         box.valueProperty().addListener(this);
-        this.getChildren().add(box);
+        box.setMinWidth(50);
+
+        customFile = new FileSelector(new FileChooser.ExtensionFilter("Bilder", "*.jpg", "*.jpeg", "*.png", "*.bmp"));
+        customFile.setVisible(false);
+        customFile.textProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+            if (target != null) {
+                target.customPath = newValue;
+            }
+        });
+
+        this.getChildren().addAll(box, customFile);
     }
 
     public void forwardBind(DocumentConfiguration.Hintergrund.Hintergrundbild target) {
@@ -47,5 +60,6 @@ public class BackgroundPictureInput extends HBox implements ChangeListener<Strin
                 target.type = DocumentConfiguration.Hintergrund.Hintergrundbild.Type.CUSTOM;
             }
         }
+        customFile.setVisible("Benutzerdefiniert".equals(newValue));
     }
 }

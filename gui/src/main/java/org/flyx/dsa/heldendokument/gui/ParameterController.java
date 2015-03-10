@@ -9,6 +9,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import org.controlsfx.dialog.Dialogs;
 import org.flyx.dsa.heldendokument.generator.AdditionalParameter;
 
@@ -34,7 +35,7 @@ public class ParameterController {
 
             switch (parameter.type) {
                 case PATH:
-                    FileSelector fileSelector = new FileSelector();
+                    FileSelector fileSelector = new FileSelector(new FileChooser.ExtensionFilter("TrueType Fonts", "*.ttf"));
                     SimpleStringProperty textProperty = new SimpleStringProperty();
                     parameters.put(parameter.name, textProperty);
                     fileSelector.textProperty().bindBidirectional(textProperty);

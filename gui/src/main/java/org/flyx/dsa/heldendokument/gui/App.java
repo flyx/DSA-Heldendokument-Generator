@@ -40,7 +40,7 @@ public class App extends Application {
         environmentValid = builder.isEnvironmentValid(envMessages);
 
         Parent parameterDef = FXMLLoader.load(getClass().getResource("/parameterWindow.fxml"));
-        Scene parameterScene = new Scene(parameterDef, 600, 200);
+        Scene parameterScene = new Scene(parameterDef, 650, 200);
 
         parameterWindow = new Stage(StageStyle.UNIFIED);
         parameterWindow.initModality(Modality.WINDOW_MODAL);

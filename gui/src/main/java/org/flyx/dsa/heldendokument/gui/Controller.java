@@ -203,7 +203,7 @@ public class Controller {
                 pane.setVgap(5);
                 pane.getColumnConstraints().addAll(
                         new ColumnConstraints(50, 100, 100, Priority.NEVER, HPos.RIGHT, false),
-                        new ColumnConstraints(25, 150, 150, Priority.NEVER, HPos.LEFT, false));
+                        new ColumnConstraints(250, 500, 500, Priority.NEVER, HPos.LEFT, false));
 
                 for (int i = 0; i < fields.size(); i++) {
                     final Field field = fields.get(i);

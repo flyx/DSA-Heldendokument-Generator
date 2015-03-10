@@ -16,7 +16,7 @@ import java.io.File;
 public class FileSelector extends HBox {
     private TextField field;
 
-    public FileSelector() {
+    public FileSelector(FileChooser.ExtensionFilter filter) {
         field = new TextField();
         field.setEditable(false);
         field.setStyle("-fx-background-radius: 5 0 0 5;");
@@ -28,7 +28,7 @@ public class FileSelector extends HBox {
         button.setOnAction((ActionEvent event) -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Datei auswählen");
-            chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TrueType Fonts", "*.ttf"));
+            chooser.getExtensionFilters().add(filter);
             File file = chooser.showOpenDialog(this.getScene().getWindow());
             if (file != null) {
                 field.textProperty().setValue(file.getAbsolutePath());

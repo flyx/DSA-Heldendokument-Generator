@@ -3,6 +3,7 @@ package org.flyx.dsa.heldendokument.generator;
 import javafx.util.Pair;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
@@ -402,19 +403,21 @@ public final class DocumentConfiguration {
                             }
                             optionen.put(valueAnnotations[0].value(), (Boolean)valueField.get(page));
                         } else if (int.class.equals(valueField.getType())) {
-                            pageSet.put(valueAnnotations[0].value(), (Integer)valueField.get(page));
+                            pageSet.put(valueAnnotations[0].value(), valueField.get(page));
                         } else if (Hintergrund.Hintergrundbild.class.equals(valueField.getType())) {
                             final Hintergrund.Hintergrundbild bild = (Hintergrund.Hintergrundbild)valueField.get(page);
                             switch (bild.type) {
                                 case ORIGINAL: pageSet.put(valueAnnotations[0].value(), true); break;
                                 case NONE: pageSet.put(valueAnnotations[0].value(), false); break;
-                                case ALTERNATIVE: pageSet.put(valueAnnotations[0].value(), "TODO"); break;
-                                case CUSTOM: pageSet.put(valueAnnotations[0].value(), bild.customPath); break;
+                                case ALTERNATIVE: pageSet.put(valueAnnotations[0].value(), valueField.equals(Hintergrund.class.getField("hochformat")) ? "wallpaper-alternative.jpg" : "wallpaper-alternative-landscape.jpg"); break;
+                                case CUSTOM: pageSet.put(valueAnnotations[0].value(), "../" + new File(bild.customPath).getName()); break;
                             }
                         }
                     }
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException("Could not load value", e);
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException("OMGWTF", e);
                 }
             }
         }
