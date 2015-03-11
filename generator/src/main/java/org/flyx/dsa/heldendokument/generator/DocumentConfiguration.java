@@ -6,6 +6,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -422,7 +423,11 @@ public final class DocumentConfiguration {
             }
         }
         final Yaml yaml = new Yaml();
-        yaml.dump(root, new OutputStreamWriter(os));
+        try {
+            yaml.dump(root, new OutputStreamWriter(os, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("This should never happen", e);
+        }
     }
 
     private int totalLines(List<Pair<String, Integer>> list) {

@@ -96,7 +96,7 @@ public class TexBuilder implements IBuilder {
         } else if ("MansonBold.ttf".equals(name)) {
             if (new File(value).isFile()) {
                 mansonBold = value;
-                preferences.put(mansonBoldKey, manson);
+                preferences.put(mansonBoldKey, mansonBold);
             } else {
                 throw new RuntimeException("Kein gültiger Pfad: " + value);
             }
@@ -381,14 +381,20 @@ public class TexBuilder implements IBuilder {
             client.connect("localhost", port);
             client.authPassword("vagrant", "vagrant");
             Session session = client.startSession();
+            session.allocateDefaultPTY();
             session.exec("cd /dsa; export DATA_FILE=configuredParameters.yaml; make clean; make heldendokument.pdf");
+            reader = new BufferedReader(new InputStreamReader(session.getInputStream()));
+            StringBuilder output = new StringBuilder();
             session.join();
+            while((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
             session.close();
             client.disconnect();
 
             File result = new File(buildRoot + "DSA-Heldendokument/heldendokument.pdf");
             if (!result.exists()) {
-                throw new ExternalCallException("PDF wurde nicht erstellt!", /*shell.getInputStream()*/ "blubb");
+                throw new ExternalCallException("PDF wurde nicht erstellt!", output.toString());
             }
             return result;
         } catch (Exception e) {
