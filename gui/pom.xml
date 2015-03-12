@@ -6,10 +6,10 @@
     <parent>
         <groupId>org.flyx.dsa.heldendokument</groupId>
         <artifactId>parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1</version>
     </parent>
     <artifactId>gui</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <name>gui</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.flyx.dsa.heldendokument</groupId>
             <artifactId>generator</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>

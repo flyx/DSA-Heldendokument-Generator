@@ -130,7 +130,7 @@ public class TexBuilder implements IBuilder {
     @Override
     public boolean isEnvironmentValid(List<String> messages) {
         boolean foundErrors = false;
-        for (Map.Entry<String, String> entry: new HashMap<String, String>() {{put("Vagrant", "vagrant"); put("VirtualBox", "VBoxManage");}}.entrySet()) {
+        for (Map.Entry<String, String> entry: new HashMap<String, String>() {{put("Vagrant", "vagrant"); /*put("VirtualBox", "VBoxManage");*/}}.entrySet()) {
             boolean available = false;
             try {
                 Process vagrantProc = new ProcessBuilder(entry.getValue(), "-v").start();
@@ -162,7 +162,8 @@ public class TexBuilder implements IBuilder {
                     if (!targetDirectoryFile.mkdirs()) {
                         throw new RuntimeException("Konnte Ordner nicht anlegen: " + targetDirectory);
                     }
-                } else if (targetDirectoryFile.isDirectory()) {
+                }
+                if (targetDirectoryFile.isDirectory()) {
                     final File targetFile = new File(targetPath);
                     if (!targetFile.exists()) {
                         Files.copy(getClass().getResourceAsStream("/" + line), targetFile.toPath());

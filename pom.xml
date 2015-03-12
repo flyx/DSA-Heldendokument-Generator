@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.flyx.dsa.heldendokument</groupId>
     <artifactId>parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>pom</packaging>
 
     <url>https://github.com/flyx/DSA-Heldendokument-Generator</url>
